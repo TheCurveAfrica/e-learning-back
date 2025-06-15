@@ -1,10 +1,10 @@
-import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, UpdateQuery } from 'mongoose';
 import { IUser } from '../interfaces/auth';
 import { IUserModel, User } from '../models/user';
 import { IUserRepository } from '../interfaces/repository/IUserRepository';
 
 export class UserRepository implements IUserRepository {
-  async createUser(payload: Omit<IUser, 'id'>, options?: QueryOptions): Promise<IUser> {
+  async createUser(payload: Omit<IUser, '_id'>): Promise<IUser> {
     const user = await User.create(payload);
     return this.convertToIUser(user);
   }

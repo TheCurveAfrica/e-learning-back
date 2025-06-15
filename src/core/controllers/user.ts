@@ -297,8 +297,6 @@ class UserController {
       throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
     }
 
-    console.log('email', email, 'resetPasswordCode', resetPasswordCode);
-
     const isResetPasswordCodeValid = await this.userService.isPasswordResetTokenValid(email, resetPasswordCode);
     if (!isResetPasswordCodeValid) {
       throw new BadRequestError({
