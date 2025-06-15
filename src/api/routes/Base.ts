@@ -1,8 +1,8 @@
 import { Router } from 'express';
-// import studentRoute from './student'; //example import, assuming you have a student route
+import authRoute from './user';
 
 const baseRoute = Router();
 
-// baseRoute.use('/students', studentRoute); // example route, assuming you have a student route
+baseRoute.use('/auth', authRoute);
 
 export default baseRoute;

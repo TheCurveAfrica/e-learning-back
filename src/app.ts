@@ -17,9 +17,9 @@ app.use(
   })
 );
 
-app.use('/api', baseRoute);
+app.use('/api/v1', baseRoute);
 
-app.use((req, res, _next): void => {
+app.use((req: Request, res: Response, _next: NextFunction): void => {
   res.status(404).send({
     status: false,
     error: 'not found',

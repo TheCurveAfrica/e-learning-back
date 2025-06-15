@@ -6,6 +6,8 @@ import { logger } from '../../core/utils/logger';
 import { Errors } from '../../core/constants/errors';
 
 function handleErrors(err: Error, _req: Request, res: Response, _next: NextFunction): Response {
+  console.error('Error caught by error handler:', err);
+
   if (err instanceof DomainError) {
     return res.status(err.getHttpCode()).send({
       status: err.getStatus(),
@@ -43,10 +45,25 @@ function handleErrors(err: Error, _req: Request, res: Response, _next: NextFunct
   }
 
   if ((err as any).code === 11000) {
-    const field = Object.keys((err as any).keyValue)[0];
+    // Safely handle MongoDB duplicate key errors
+    try {
+      const keyValue = (err as any).keyValue;
+      if (keyValue && typeof keyValue === 'object') {
+        const field = Object.keys(keyValue)[0];
+        return res.status(409).send({
+          error: 'duplicate_key',
+          message: `${field} already exists.`,
+          data: {}
+        });
+      }
+    } catch (innerError) {
+      console.error('Error handling duplicate key error:', innerError);
+    }
+
+    // Fallback if we couldn't extract the field name
     return res.status(409).send({
       error: 'duplicate_key',
-      message: `${field} already exists.`,
+      message: 'A duplicate key error occurred.',
       data: {}
     });
   }
