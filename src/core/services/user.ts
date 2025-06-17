@@ -6,7 +6,7 @@ import { addSeconds, isAfter } from 'date-fns';
 import settings from '../config/application';
 import TooManyRequestsError from '../errors/TooManyRequestsError';
 import redisClient from '../utils/redis';
-import { generateAlphanumericString, generateRandomInteger } from '../helpers/utilities';
+import { generateRandomInteger } from '../helpers/utilities';
 
 class UserService {
   private userRepository: IUserRepository;

@@ -162,15 +162,30 @@ class UserController {
     };
   }
 
-  async setPassword(userId: number, body: SetPassword): Promise<{ modifiedCount: number }> {
+  async setPassword(userId: number, body: SetPassword): Promise<{ modifiedCount: number; accessToken: string; refreshToken: string }> {
     const user = await this.userService.getUser({ id: userId });
     if (!user) {
       throw new ResourceNotFoundError({ message: 'Student not found' });
     }
 
-    const updatedUser = await this.userService.updateUser(body, { id: userId });
+    if (!user.isEmailVerified) {
+      throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
+    }
 
-    return updatedUser;
+    const updatedUser = await this.userService.updateUser(body, { id: userId });
+    if (updatedUser.modifiedCount === 0) {
+      throw new BadRequestError({ message: 'Failed to update password', reason: 'No changes made to the password' });
+    }
+
+    const accessToken = generateAccessJwtToken({ id: user._id, email: user.email });
+    const refreshToken = generateRefreshJwtToken({ id: user._id });
+    await this.userService.cacheRefreshToken({ userId: user._id, refreshToken });
+
+    return {
+      modifiedCount: updatedUser.modifiedCount,
+      accessToken,
+      refreshToken
+    };
   }
 
   async loginUser(body: { email: string; password: string }): Promise<LoginResponse> {
@@ -179,9 +194,9 @@ class UserController {
       throw new ResourceNotFoundError({ message: 'Student not found', reason: 'Student not registered' });
     }
 
-    // if (!user.isEmailVerified) {
-    //   throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
-    // }
+    if (!user.isEmailVerified) {
+      throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
+    }
 
     const passwordCorrect = bcrypt.compare(body.password, user.password);
     if (!passwordCorrect) {
