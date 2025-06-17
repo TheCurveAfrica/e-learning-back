@@ -21,7 +21,7 @@ class UserController {
   async register(body: Omit<IUser, '_id'>): Promise<Partial<IUser | ResendVerificationEmailResponse>> {
     const user = await this.userService.getUser({ email: body.email });
     if (user) {
-      const { email, nextResendDuration } = await this.resendVerificationEmail({ email: body.email, customerResend: true });
+      const { email, nextResendDuration } = await this.resendVerificationEmail({ email: body.email, studentResend: true });
 
       return {
         email,
@@ -109,17 +109,17 @@ class UserController {
     }
   }
 
-  async resendVerificationEmail(params: { email: string; customerResend?: boolean }): Promise<{ email: string; nextResendDuration: number }> {
+  async resendVerificationEmail(params: { email: string; studentResend?: boolean }): Promise<{ email: string; nextResendDuration: number }> {
     const user = await this.userService.getUser({ email: params.email });
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     } else if (user.isEmailVerified) {
       throw new BadRequestError({ message: `User with email: ${params.email} is already verified`, reason: 'Email already verified' });
     }
 
     const { verificationLink } = await this.userService.cacheEmailVerificationDetail({
       email: params.email,
-      studentResend: !!params.customerResend
+      studentResend: !!params.studentResend
     });
 
     try {
@@ -138,7 +138,7 @@ class UserController {
   async verifyEmail(email: string, verificationToken: string): Promise<{ firstname: string; lastname: string; email: string; token: string }> {
     const user = await this.userService.getUser({ email });
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
 
     const isTokenValid = await this.userService.isVerificationCodeValid(email, verificationToken);
@@ -163,7 +163,7 @@ class UserController {
   }
 
   async setPassword(userId: number, body: SetPassword): Promise<{ modifiedCount: number; accessToken: string; refreshToken: string }> {
-    const user = await this.userService.getUser({ id: userId });
+    const user = await this.userService.getUser({ _id: userId });
     if (!user) {
       throw new ResourceNotFoundError({ message: 'Student not found' });
     }
@@ -172,7 +172,7 @@ class UserController {
       throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
     }
 
-    const updatedUser = await this.userService.updateUser(body, { id: userId });
+    const updatedUser = await this.userService.updateUser(body, { _id: userId });
     if (updatedUser.modifiedCount === 0) {
       throw new BadRequestError({ message: 'Failed to update password', reason: 'No changes made to the password' });
     }
@@ -194,9 +194,9 @@ class UserController {
       throw new ResourceNotFoundError({ message: 'Student not found', reason: 'Student not registered' });
     }
 
-    if (!user.isEmailVerified) {
-      throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
-    }
+    // if (!user.isEmailVerified) {
+    //   throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
+    // }
 
     const passwordCorrect = bcrypt.compare(body.password, user.password);
     if (!passwordCorrect) {
@@ -216,9 +216,9 @@ class UserController {
     userId: string;
     refreshToken: string;
   }): Promise<{ _id: string; name: string; email: string; accessToken: string; refreshToken: string }> {
-    const user = await this.userService.getUser({ id: data.userId });
+    const user = await this.userService.getUser({ _id: data.userId });
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
 
     const isTokenValid = await this.userService.isRefreshTokenValid({ userId: data.userId, refreshToken: data.refreshToken });
@@ -236,18 +236,18 @@ class UserController {
   }
 
   async logout(userId: string): Promise<void> {
-    const user = await this.userService.getUser({ id: userId });
+    const user = await this.userService.getUser({ _id: userId });
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
 
     await this.userService.clearCachedToken(userId);
   }
 
   async me(userId: number): Promise<UserProfileData> {
-    const user = await this.userService.getUserWithRoleName({ id: userId });
+    const user = await this.userService.getUserWithRoleName({ _id: userId });
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
 
     const userData = {
@@ -265,9 +265,9 @@ class UserController {
   }
 
   async changePassword(userId: number, body: { oldPassword: string; newPassword: string; confirmPassword: string }): Promise<void> {
-    const user = await this.userService.getUser({ id: userId });
+    const user = await this.userService.getUser({ _id: userId });
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
 
     const passwordCorrect = bcrypt.compare(body.oldPassword, user.password);
@@ -285,13 +285,13 @@ class UserController {
     const saltPassword = bcrypt.genSaltSync(10);
     body.newPassword = bcrypt.hashSync(body.newPassword, saltPassword);
 
-    await this.userService.updateUser({ password: body.newPassword }, { id: userId });
+    await this.userService.updateUser({ password: body.newPassword }, { _id: userId });
   }
 
   async resetPassword(email: string): Promise<void> {
     const user = await this.userService.getUser({ email });
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
 
     const { resetPasswordLink } = await this.userService.cachePasswordResetDetails(email);
@@ -309,7 +309,7 @@ class UserController {
   async verifyResetPasswordWithToken(email: string, resetPasswordCode: string, newPassword: string, confirmPassword: string): Promise<void> {
     const user = await this.userService.getUser({ email });
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Customer not registered' });
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
 
     const isResetPasswordCodeValid = await this.userService.isPasswordResetTokenValid(email, resetPasswordCode);

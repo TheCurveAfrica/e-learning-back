@@ -53,7 +53,7 @@ class UserRequestHandler {
 
   resendSignupVerificationToken: RequestHandler = async (req, res, next) => {
     try {
-      const { nextResendDuration } = await this.userController.resendVerificationEmail({ email: req.body.email, customerResend: false });
+      const { nextResendDuration } = await this.userController.resendVerificationEmail({ email: req.body.email, studentResend: false });
       res.json(responseHandler({ email: req.body.email, next_resend_duration: nextResendDuration }, 'Verification email has been sent successfully'));
     } catch (error) {
       next(error);

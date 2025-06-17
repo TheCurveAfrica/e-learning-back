@@ -18,8 +18,8 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       });
     }
     const decodedToken = jwt.verify(token, settings.jwt.access_token_secret_key) as JwtPayload;
-    if (decodedToken && decodedToken.id) {
-      const user = await userRepository.getUser({ id: decodedToken.id });
+    if (decodedToken && decodedToken._id) {
+      const user = await userRepository.getUser({ id: decodedToken._id });
       if (!user) {
         throw new ForbiddenError({ message: 'Authorization denied. User not found' });
       }
