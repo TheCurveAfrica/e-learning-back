@@ -68,6 +68,11 @@ export class UserRepository implements IUserRepository {
     return createdUsers.map((user) => this.convertToIUser(user));
   }
 
+  async allUsers(): Promise<IUser[]> {
+    const users = await User.find();
+    return users.map((user) => this.convertToIUser(user));
+  }
+
   private convertToIUser(user: IUserModel): IUser {
     return {
       _id: user._id.toString(),
@@ -78,7 +83,8 @@ export class UserRepository implements IUserRepository {
       phone: user.phone,
       gender: user.gender,
       isEmailVerified: user.isEmailVerified,
-      stack: user.stack
+      stack: user.stack,
+      status: user.status
     };
   }
 }
