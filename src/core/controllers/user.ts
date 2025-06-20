@@ -5,7 +5,7 @@ import ResourceNotFoundError from '../errors/ResourceNotFoundError';
 import { capitalizeFirstLetter } from '../helpers/utilities';
 import { IUser, SetPassword } from '../interfaces/auth';
 import UserService from '../services/user';
-import { VerificationTokenStatus } from '../constants/user';
+import { USER_STATUS, VerificationTokenStatus } from '../constants/user';
 import { logger } from '../utils/logger';
 import settings from '../config/application';
 import EmailService from '../services/email';
@@ -21,12 +21,7 @@ class UserController {
   async register(body: Omit<IUser, '_id'>): Promise<Partial<IUser | ResendVerificationEmailResponse>> {
     const user = await this.userService.getUser({ email: body.email });
     if (user) {
-      const { email, nextResendDuration } = await this.resendVerificationEmail({ email: body.email, studentResend: true });
-
-      return {
-        email,
-        nextResendDuration: nextResendDuration as unknown as number
-      };
+      throw new BadRequestError({ message: 'User already exists', reason: 'User already registered' });
     }
 
     const saltPassword = bcrypt.genSaltSync(10);
@@ -41,7 +36,9 @@ class UserController {
       email: newUser.email,
       phone: newUser.phone,
       gender: newUser.gender,
-      isEmailVerified: newUser.isEmailVerified
+      isEmailVerified: newUser.isEmailVerified,
+      stack: newUser.stack,
+      status: newUser.status
     };
 
     return userData;
@@ -98,6 +95,10 @@ class UserController {
       throw new ResourceNotFoundError({ message: `Student with email: ${email} not found`, reason: `Student with ${email} has not been registered` });
     }
 
+    // if (student.isEmailVerified) {
+    //   throw new BadRequestError({ message: `User with email: ${email} is already verified`, reason: 'Email already verified' });
+    // }
+
     const { verificationLink } = await this.userService.cacheEmailVerificationDetail({
       email
     });
@@ -139,6 +140,10 @@ class UserController {
     const user = await this.userService.getUser({ email });
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestError({ message: `User with email: ${email} is already verified`, reason: 'Email already verified' });
     }
 
     const isTokenValid = await this.userService.isVerificationCodeValid(email, verificationToken);
@@ -194,8 +199,16 @@ class UserController {
       throw new ResourceNotFoundError({ message: 'Student not found', reason: 'Student not registered' });
     }
 
-    // if (!user.isEmailVerified) {
-    //   throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
+    if (!user.isEmailVerified) {
+      throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
+    }
+
+    if (!user.password) {
+      throw new BadRequestError({ message: 'Password not set', reason: 'Password not set' });
+    }
+
+    // if (user.status === USER_STATUS.Inactive) {
+    //   throw new BadRequestError({ message: 'User is inactive', reason: 'User is inactive' });
     // }
 
     const passwordCorrect = bcrypt.compare(body.password, user.password);
@@ -330,6 +343,11 @@ class UserController {
     await this.userService.updateUser({ password: newPassword }, { email });
 
     await this.userService.clearCachedPasswordResetToken(email);
+  }
+
+  async getAllUsers(): Promise<IUser[]> {
+    const users = await this.userService.getAllUsers();
+    return users;
   }
 }
 
