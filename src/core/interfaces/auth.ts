@@ -41,6 +41,7 @@ export interface IUser {
   gender: string;
   isEmailVerified: boolean;
   stack: string;
+  status: string;
 }
 
 export interface SetPassword {
