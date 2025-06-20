@@ -3,6 +3,6 @@ import authRoute from './user';
 
 const baseRoute = Router();
 
-baseRoute.use('/auth', authRoute);
+baseRoute.use('/auth/users', authRoute);
 
 export default baseRoute;
