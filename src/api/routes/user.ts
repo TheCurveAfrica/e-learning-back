@@ -46,7 +46,7 @@ const authRoute = (): Router => {
     validationWrapper(SEGMENT.BODY, verifyResetPasswordWithTokenSchema),
     userRequestHandler.verifyResetPasswordWithToken
   );
-
+  router.get('/', userRequestHandler.getAllUsers);
   return router;
 };
 
