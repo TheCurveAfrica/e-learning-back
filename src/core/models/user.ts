@@ -12,7 +12,8 @@ const UserSchema: Schema = new Schema(
     phone: { type: String, required: true },
     gender: { type: String, required: true },
     isEmailVerified: { type: Boolean, default: false },
-    stack: { type: String, required: true }
+    stack: { type: String, required: true },
+    status: { type: String, required: true }
   },
   {
     timestamps: true
