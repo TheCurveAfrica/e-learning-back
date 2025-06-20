@@ -63,7 +63,7 @@ class UserRequestHandler {
   login: RequestHandler = async (req, res, next) => {
     try {
       const user = await this.userController.loginUser(req.body);
-      res.json(responseHandler(user, 'User registered successfully'));
+      res.json(responseHandler(user, 'User login successfully'));
     } catch (error) {
       next(error);
     }
@@ -131,6 +131,15 @@ class UserRequestHandler {
     try {
       await this.userController.verifyResetPasswordWithToken(req.body.email, req.body.reset_code, req.body.new_password, req.body.confirm_password);
       res.json(responseHandler(null, 'Password reset successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllUsers: RequestHandler = async (req, res, next) => {
+    try {
+      const users = await this.userController.getAllUsers();
+      res.json(responseHandler(users, 'Users retrieved successfully'));
     } catch (error) {
       next(error);
     }
