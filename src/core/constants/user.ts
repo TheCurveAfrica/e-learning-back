@@ -1,6 +1,7 @@
 export enum USER_ROLES {
   ADMIN = 'admin',
-  CUSTOMER = 'customer'
+  STUDENT = 'student',
+  INSTRUCTOR = 'instructor'
 }
 
 export enum USER_GENDER {
