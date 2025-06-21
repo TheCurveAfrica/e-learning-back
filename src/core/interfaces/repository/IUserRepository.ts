@@ -9,7 +9,6 @@ export interface IUserRepository {
   getUser(filter: FilterQuery<IUserModel>): Promise<IUser | null>;
   findUserById(id: string): Promise<IUser | null>;
   findAllUsers(filter?: FilterQuery<IUserModel>): Promise<IUser[]>;
-  allUsers(): Promise<IUser[]>;
   updateUser(filter: FilterQuery<IUserModel>, payload: UpdateQuery<IUserModel>): Promise<{ modifiedCount: number }>;
   deleteUser(filter: FilterQuery<IUserModel>): Promise<{ deletedCount: number }>;
   countUser(filter: FilterQuery<IUserModel>): Promise<number>;
