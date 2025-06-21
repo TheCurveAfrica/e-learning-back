@@ -345,8 +345,8 @@ class UserController {
     await this.userService.clearCachedPasswordResetToken(email);
   }
 
-  async getAllUsers(): Promise<IUser[]> {
-    const users = await this.userService.getAllUsers();
+  async findAllUsers(): Promise<IUser[]> {
+    const users = await this.userService.findAllUsers();
     return users;
   }
 }
