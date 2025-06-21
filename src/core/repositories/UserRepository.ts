@@ -37,7 +37,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async findAllUsers(filter: FilterQuery<IUserModel> = {}): Promise<IUser[]> {
-    const users = await User.find(filter);
+    const users = await User.find(filter).sort({ createdAt: -1 });
     return users.map((user) => this.convertToIUser(user));
   }
 
@@ -66,11 +66,6 @@ export class UserRepository implements IUserRepository {
   async bulkCreateUsers(users: Omit<IUser, 'id'>[]): Promise<IUser[]> {
     const createdUsers = await User.insertMany(users);
     return createdUsers.map((user) => this.convertToIUser(user));
-  }
-
-  async allUsers(): Promise<IUser[]> {
-    const users = await User.find().sort({ createdAt: -1 });
-    return users.map((user) => this.convertToIUser(user));
   }
 
   private convertToIUser(user: IUserModel): IUser {
