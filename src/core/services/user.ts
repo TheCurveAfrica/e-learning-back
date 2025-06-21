@@ -168,6 +168,10 @@ class UserService {
     const resetLinkCacheKey = `PASSWORD_RESET:${email}`;
     await redisClient.del(resetLinkCacheKey);
   }
+
+  async getAllUsers(): Promise<IUser[]> {
+    return await this.findAllUsers();
+  }
 }
 
 export default UserService;
