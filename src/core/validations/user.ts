@@ -9,7 +9,7 @@ export const registrationSchema = z.object({
   password: passwordValidator,
   phone: z.string().trim().min(7).max(13),
   gender: z.enum([USER_GENDER.MALE, USER_GENDER.FEMALE]).transform((val) => val.toLowerCase()),
-  stack: z.enum([STACK.FRONTEND, STACK.BACKEND]).transform((val) => val.toLowerCase()),
+  stack: z.enum([STACK.FRONTEND, STACK.BACKEND, STACK.PRODUCT_DESIGN]).transform((val) => val.toLowerCase()),
   isEmailVerified: z.boolean().default(false),
   status: z.enum([USER_STATUS.Active, USER_STATUS.Inactive]).default(USER_STATUS.Inactive)
 });
@@ -27,7 +27,7 @@ export const loginSchema = z.object({
 
 export const verifyUserSchema = z.object({
   email: z.string().trim().toLowerCase().min(10).max(50).email(),
-  verification_token: z.string().trim().min(32).max(32)
+  verification_token: z.string().trim().min(1).max(32)
 });
 
 export const sendSignUpVerifyCodeSchema = z.object({
