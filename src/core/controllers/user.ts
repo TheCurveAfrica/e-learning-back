@@ -95,9 +95,9 @@ class UserController {
       throw new ResourceNotFoundError({ message: `Student with email: ${email} not found`, reason: `Student with ${email} has not been registered` });
     }
 
-    // if (student.isEmailVerified) {
-    //   throw new BadRequestError({ message: `User with email: ${email} is already verified`, reason: 'Email already verified' });
-    // }
+    if (student.isEmailVerified) {
+      throw new BadRequestError({ message: `User with email: ${email} is already verified`, reason: 'Email already verified' });
+    }
 
     const { verificationLink } = await this.userService.cacheEmailVerificationDetail({
       email
