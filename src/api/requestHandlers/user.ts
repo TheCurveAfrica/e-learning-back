@@ -138,7 +138,7 @@ class UserRequestHandler {
 
   getAllUsers: RequestHandler = async (req, res, next) => {
     try {
-      const users = await this.userController.getAllUsers();
+      const users = await this.userController.findAllUsers();
       res.json(responseHandler(users, 'Users retrieved successfully'));
     } catch (error) {
       next(error);
