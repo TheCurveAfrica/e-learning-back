@@ -69,7 +69,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async allUsers(): Promise<IUser[]> {
-    const users = await User.find();
+    const users = await User.find().sort({ createdAt: -1 });
     return users.map((user) => this.convertToIUser(user));
   }
 
