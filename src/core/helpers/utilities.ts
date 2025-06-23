@@ -47,9 +47,14 @@ const getZodErrorMessage = (error: z.ZodIssue): string => {
       return `${path} is too big`;
     case 'invalid_string':
       if (error.validation === 'regex') {
-        return `${path} should contain only alphanumeric characters`;
+        return error.message;
       }
       return `${path} has invalid format`;
+    //   case 'invalid_string':
+    // if (error.validation === 'regex') {
+    //   return `${path} should contain only alphanumeric characters`;
+    // }
+    // return `${path} has invalid format`;
     case 'custom':
       return error.message;
     default:
@@ -74,11 +79,20 @@ export const zodWrapperValidate = <T>(data: any, schema: z.ZodType<T>): { data: 
 
 export const passwordValidator = z
   .string()
-  .min(8)
+  .min(8, 'Password must be at least 8 characters')
   .max(50)
   .trim()
   .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*\d).*/, {
     message: 'Password must include at least one uppercase character, one lowercase character, one special character, and one digit'
+  });
+
+export const phoneValidator = z
+  .string()
+  .min(10, 'Phone number must be at least 10 digits long')
+  .max(11)
+  .trim()
+  .regex(/^[0-9]+$/, {
+    message: 'Phone number must contain only digits'
   });
 
 /**
@@ -110,5 +124,5 @@ export function generateRandomInteger(digits: number): number {
 }
 
 export const capitalizeFirstLetter = (str: string): string => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
