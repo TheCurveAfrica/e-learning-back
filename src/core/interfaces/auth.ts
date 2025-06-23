@@ -15,6 +15,8 @@ export interface UserProfileData {
   gender: string;
   role?: string;
   isEmailVerified: boolean;
+  stack?: string;
+  status?: string;
 }
 
 export interface TokenPayload {
