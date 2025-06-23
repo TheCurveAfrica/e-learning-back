@@ -31,6 +31,11 @@ const settings = {
     port: Number(process.env.EMAIL_PORT || 465),
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  },
+  cloudinary: {
+    name: process.env.CLOUDINARY_NAME,
+    key: process.env.CLOUDINARY_KEY,
+    secret: process.env.CLOUDINARY_SECRET
   }
 };
 
