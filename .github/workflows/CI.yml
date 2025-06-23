@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Run lint validations
-        run: npm run ci-validate
+        run: npm run validate
 
       - name: Build application     
         run: npm run build
