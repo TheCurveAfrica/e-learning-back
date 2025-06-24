@@ -7,6 +7,10 @@ import settings from '../config/application';
 import TooManyRequestsError from '../errors/TooManyRequestsError';
 import redisClient from '../utils/redis';
 import { generateRandomInteger } from '../helpers/utilities';
+import { bulkRegistrationSchema } from '../validations/user';
+import { EMAIL_STATUS, USER_STATUS } from '../constants/user';
+import * as XLSX from 'xlsx';
+import BadRequestError from '../errors/BadRequestError';
 
 class UserService {
   private userRepository: IUserRepository;
@@ -36,7 +40,7 @@ class UserService {
     return await this.userRepository.findAllUsers(filter);
   }
 
-  async updateUser(payload: Partial<Omit<IUser, '_id'>>, filter: FilterQuery<IUserModel>): Promise<{ modifiedCount: number }> {
+  async updateUser(payload: Partial<Omit<IUser, '_id'>>, filter: FilterQuery<IUserModel>): Promise<IUserModel | null> {
     return await this.userRepository.updateUser(filter, payload);
   }
 
@@ -46,6 +50,108 @@ class UserService {
 
   async bulkCreateUsers(users: Omit<IUser, '_id'>[]): Promise<IUser[]> {
     return await this.userRepository.bulkCreateUsers(users);
+  }
+
+  async bulkCreateUsersFromExcel(fileBuffer: Buffer): Promise<{ created: IUser[]; duplicates: string[]; invalidRows: any[] }> {
+    if (!fileBuffer) throw new BadRequestError({ message: 'Excel file is required' });
+    const rawRows = this.extractRows(fileBuffer);
+    if (!rawRows.length) throw new BadRequestError({ message: 'No rows found in sheet' });
+
+    const { formattedUsers, invalidRows, invalidSet } = this.normalizeRows(rawRows);
+
+    if (!formattedUsers.length) throw new BadRequestError({ message: 'No valid rows found in sheet' });
+
+    let validUsers: any[] = [];
+    console.log(validUsers);
+    const parseResult = bulkRegistrationSchema.safeParse(formattedUsers);
+
+    if (parseResult.success) {
+      validUsers = parseResult.data;
+      console.log('✅ Valid users:', validUsers.length);
+    } else {
+      console.log('❌ Zod validation failed:', parseResult.error.errors);
+
+      for (const issue of parseResult.error.errors) {
+        const index = typeof issue.path[0] === 'number' ? issue.path[0] : -1;
+        const row = formattedUsers[index];
+        if (row?.email && !invalidSet.has(row.email)) {
+          invalidRows.push({
+            ...row,
+            reason: issue.message
+          });
+          invalidSet.add(row.email);
+        }
+      }
+
+      // if (invalidRows.length) {
+      //   if (invalidRows.length === formattedUsers.length) {
+      //     throw new BadRequestError({ message: 'No valid rows found in sheet' });
+      //   } else {
+      //     console.log('❌ Invalid rows found:', invalidRows.length);
+
+      const invalidEmails = new Set(invalidRows.map((u) => u.email));
+      validUsers = formattedUsers.filter((u) => !invalidEmails.has(u.email));
+    }
+
+    const emails = validUsers.map((user) => user.email);
+    const existingUsers = await this.userRepository.findAllUsers({ email: { $in: emails } });
+    const existingEmails = new Set(existingUsers.map((user) => user.email));
+
+    const newUsers = validUsers.filter((user) => !existingEmails.has(user.email));
+    const duplicates = validUsers.filter((user) => existingEmails.has(user.email)).map((user) => user.email);
+
+    const created = newUsers.length ? await this.userRepository.bulkCreateUsers(newUsers as Omit<IUser, '_id'>[]) : [];
+
+    return { created, duplicates, invalidRows };
+  }
+
+  private extractRows(buffer: Buffer): any[] {
+    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(sheet, { defval: '' });
+  }
+
+  private normalizeRows(rawRows: any[]): { formattedUsers: any[]; invalidRows: any[]; invalidSet: Set<string> } {
+    const formattedUsers: any[] = [];
+    const invalidRows: any[] = [];
+    const invalidSet = new Set<string>();
+
+    for (const row of rawRows) {
+      const normalized: Record<string, any> = {};
+      for (const key in row) {
+        normalized[key.toLowerCase().trim()] = row[key];
+      }
+
+      const email = normalized['email']?.toLowerCase().trim() || normalized['email address']?.toLowerCase().trim() || '';
+      const firstName = normalized['firstname'] || normalized['first name'] || '';
+      const lastName = normalized['lastname'] || normalized['last name'] || '';
+      console.log(normalized['phone']);
+      const phone = normalized['phone']?.toString() || normalized['phone number']?.toString() || normalized['phonenumber']?.toString() || ' ';
+      const gender = normalized['gender']?.toLowerCase() || '';
+      const stack = normalized['stack']?.toLowerCase() || '';
+
+      if (!email || !firstName || !lastName || !gender || !stack) {
+        if (email && !invalidSet.has(email)) {
+          invalidRows.push(row);
+          invalidSet.add(email);
+        }
+        continue;
+      }
+
+      formattedUsers.push({
+        email,
+        firstname: firstName,
+        lastname: lastName,
+        phone: phone || ' ',
+        gender,
+        stack,
+        password: ' ',
+        isEmailVerified: EMAIL_STATUS.NOT_VERIFIED,
+        status: USER_STATUS.Inactive
+      });
+    }
+
+    return { formattedUsers, invalidRows, invalidSet };
   }
 
   async getUserWithRoleName(filter: FilterQuery<IUserModel>): Promise<IUser | null> {

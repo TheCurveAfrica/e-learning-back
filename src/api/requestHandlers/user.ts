@@ -20,14 +20,21 @@ class UserRequestHandler {
     }
   };
 
-  createManyUsers: RequestHandler = async (req, res, next) => {
+  uploadManyUsersFromExcel: RequestHandler = async (req, res, next) => {
     try {
-      if (!Array.isArray(req.body)) {
-        throw new Error('Request body must be an array');
+      const file = req.file;
+      if (!file || !file.buffer) {
+        throw new BadRequestError({ message: 'Excel file buffer missing' });
       }
 
-      const users = await this.userController.bulkCreateUsers(req.body);
-      res.json(responseHandler(users, 'Users created successfully'));
+      const result = await this.userController.bulkCreateUsersFromExcel(file.buffer);
+
+      res.json(
+        responseHandler(
+          { created: result.created.length, duplicates: result.duplicates.length, invalidRows: result.invalidRows.length, result },
+          'Bulk users processed'
+        )
+      );
     } catch (error) {
       next(error);
     }
@@ -96,10 +103,21 @@ class UserRequestHandler {
     }
   };
 
-  updateUserPassword: RequestHandler = async (req, res, next) => {
+  setInitialPassword: RequestHandler = async (req, res, next) => {
     try {
-      const user = await this.userController.setPassword(res.locals.user.id, req.body);
-      res.json(responseHandler(user, 'User profile updated successfully'));
+      const { email, password, confirm_password } = req.body;
+      console.log(req.body);
+      if (!email || !password || !confirm_password) {
+        throw new BadRequestError({ message: 'Please fill all the required fields', reason: 'All fields are required' });
+      }
+
+      if (password !== confirm_password) {
+        throw new BadRequestError({ message: 'Passwords do not match', reason: 'Password mismatch' });
+      }
+
+      const userData = await this.userController.setInitialPassword(email, { password });
+
+      res.json(responseHandler(userData, 'Password set successfully. You may now login.'));
     } catch (error) {
       next(error);
     }

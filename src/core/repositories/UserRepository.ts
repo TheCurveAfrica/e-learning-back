@@ -41,9 +41,8 @@ export class UserRepository implements IUserRepository {
     return users.map((user) => this.convertToIUser(user));
   }
 
-  async updateUser(filter: FilterQuery<IUserModel>, payload: UpdateQuery<IUserModel>): Promise<{ modifiedCount: number }> {
-    const result = await User.updateMany(filter, payload);
-    return { modifiedCount: result.modifiedCount };
+  async updateUser(filter: FilterQuery<IUserModel>, payload: UpdateQuery<IUserModel>): Promise<IUserModel | null> {
+    return await User.findOneAndUpdate(filter, payload, { new: true });
   }
 
   async deleteUser(filter: FilterQuery<IUserModel>): Promise<{ deletedCount: number }> {

@@ -11,7 +11,7 @@ export enum USER_GENDER {
 }
 
 export enum USER_STATUS {
-  Locked = 'locked',
+  Suspended = 'suspended',
   Active = 'active',
   Inactive = 'inactive'
 }

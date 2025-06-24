@@ -18,14 +18,26 @@ class UserController {
     this.userService = _userService;
   }
 
+  async bulkCreateUsersFromExcel(fileBuffer: Buffer): Promise<{ created: IUser[]; duplicates: string[]; invalidRows: any[] }> {
+    return await this.userService.bulkCreateUsersFromExcel(fileBuffer);
+  }
+
   async register(body: Omit<IUser, '_id'>): Promise<Partial<IUser | ResendVerificationEmailResponse>> {
     const user = await this.userService.getUser({ email: body.email });
     if (user) {
       throw new BadRequestError({ message: 'User already exists', reason: 'User already registered' });
     }
 
-    const saltPassword = bcrypt.genSaltSync(10);
-    body.password = bcrypt.hashSync(body.password, saltPassword);
+    if (body.password && body.password !== '') {
+      const saltPassword = bcrypt.genSaltSync(10);
+      body.password = bcrypt.hashSync(body.password, saltPassword);
+    }
+    if (body.phone === '' || body.phone === undefined) {
+      body.phone = ' ';
+    }
+    body.firstname = capitalizeFirstLetter(body.firstname);
+    body.lastname = capitalizeFirstLetter(body.lastname);
+    body.password = ' ';
 
     const newUser = await this.userService.createUser(body);
 
@@ -43,38 +55,38 @@ class UserController {
 
     return userData;
   }
-  async bulkCreateUsers(body: Omit<IUser, '_id'>[]): Promise<IUser[]> {
-    if (!Array.isArray(body) || body.length === 0) {
-      throw new BadRequestError({ message: 'Users data must be a non-empty array' });
-    }
+  // async bulkCreateUsers(body: Omit<IUser, '_id'>[]): Promise<IUser[]> {
+  //   if (!Array.isArray(body) || body.length === 0) {
+  //     throw new BadRequestError({ message: 'Users data must be a non-empty array' });
+  //   }
 
-    try {
-      const emails = body.map((user) => user.email);
+  //   try {
+  //     const emails = body.map((user) => user.email);
 
-      const existingUsers = await this.userService.findAllUsers({ email: { $in: emails } });
-      const existingEmails = new Set(existingUsers.map((user) => user.email));
+  //     const existingUsers = await this.userService.findAllUsers({ email: { $in: emails } });
+  //     const existingEmails = new Set(existingUsers.map((user) => user.email));
 
-      const newUsers = body.filter((user) => !existingEmails.has(user.email));
-      if (newUsers.length === 0) {
-        return [];
-      }
+  //     const newUsers = body.filter((user) => !existingEmails.has(user.email));
+  //     if (newUsers.length === 0) {
+  //       return [];
+  //     }
 
-      const usersWithHashedPasswords = newUsers.map((user) => {
-        const saltPassword = bcrypt.genSaltSync(10);
-        return {
-          ...user,
-          password: bcrypt.hashSync(user.password, saltPassword)
-        };
-      });
+  //     const usersWithHashedPasswords = newUsers.map((user) => {
+  //       const saltPassword = bcrypt.genSaltSync(10);
+  //       return {
+  //         ...user,
+  //         password: bcrypt.hashSync(user.password, saltPassword)
+  //       };
+  //     });
 
-      const createdUsers = await this.userService.bulkCreateUsers(usersWithHashedPasswords);
+  //     const createdUsers = await this.userService.bulkCreateUsers(usersWithHashedPasswords);
 
-      return createdUsers;
-    } catch (error) {
-      console.error('Error in bulkCreateUsers:', error);
-      throw error;
-    }
-  }
+  //     return createdUsers;
+  //   } catch (error) {
+  //     console.error('Error in bulkCreateUsers:', error);
+  //     throw error;
+  //   }
+  // }
 
   async sendValidationEmail(email: string): Promise<void> {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -167,30 +179,38 @@ class UserController {
     };
   }
 
-  async setPassword(userId: number, body: SetPassword): Promise<{ modifiedCount: number; accessToken: string; refreshToken: string }> {
-    const user = await this.userService.getUser({ _id: userId });
+  async setInitialPassword(email: string, body: { password: string }): Promise<UserProfileData> {
+    const user = await this.userService.getUser({ email });
+    console.log('user', user);
     if (!user) {
-      throw new ResourceNotFoundError({ message: 'Student not found' });
+      throw new ResourceNotFoundError({ message: 'User not found' });
     }
 
     if (!user.isEmailVerified) {
       throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
     }
 
-    const updatedUser = await this.userService.updateUser(body, { _id: userId });
-    if (updatedUser.modifiedCount === 0) {
-      throw new BadRequestError({ message: 'Failed to update password', reason: 'No changes made to the password' });
+    const hashedPassword = bcrypt.hashSync(body.password, 10);
+    const updatedUser = await this.userService.updateUser({ password: hashedPassword }, { email });
+    console.log('updatedUser', updatedUser);
+
+    if (!updatedUser) {
+      throw new BadRequestError({ message: 'Failed to update password' });
     }
 
-    const accessToken = generateAccessJwtToken({ id: user._id, email: user.email });
-    const refreshToken = generateRefreshJwtToken({ id: user._id });
-    await this.userService.cacheRefreshToken({ userId: user._id, refreshToken });
-
-    return {
-      modifiedCount: updatedUser.modifiedCount,
-      accessToken,
-      refreshToken
+    const userData: UserProfileData = {
+      id: updatedUser._id.toString(),
+      firstname: updatedUser.firstname,
+      lastname: updatedUser.lastname,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      gender: updatedUser.gender,
+      stack: updatedUser.stack,
+      status: updatedUser.status,
+      isEmailVerified: updatedUser.isEmailVerified
     };
+
+    return userData;
   }
 
   async loginUser(body: { email: string; password: string }): Promise<LoginResponse> {
@@ -203,15 +223,18 @@ class UserController {
       throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
     }
 
-    if (!user.password) {
-      throw new BadRequestError({ message: 'Password not set', reason: 'Password not set' });
+    if (user.password === ' ') {
+      throw new BadRequestError({ message: 'Password not set, Please set your password to login', reason: 'Password not set' });
     }
 
-    // if (user.status === USER_STATUS.Inactive) {
-    //   throw new BadRequestError({ message: 'User is inactive', reason: 'User is inactive' });
-    // }
+    if (user.status === USER_STATUS.Inactive && !user.isEmailVerified) {
+      throw new BadRequestError({ message: 'User is inactive', reason: "User's account has not been activated" });
+    }
 
-    const passwordCorrect = bcrypt.compare(body.password, user.password);
+    console.log('user', user);
+
+    const passwordCorrect = bcrypt.compareSync(body.password, user.password);
+    console.log('passwordCorrect', passwordCorrect);
     if (!passwordCorrect) {
       throw new BadRequestError({ message: 'Invalid password or email' });
     }

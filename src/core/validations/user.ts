@@ -1,13 +1,12 @@
 import z from 'zod';
 import { STACK, USER_GENDER, USER_STATUS } from '../constants/user';
-import { passwordValidator } from '../helpers/utilities';
+import { passwordValidator, phoneValidator } from '../helpers/utilities';
 
 export const registrationSchema = z.object({
   firstname: z.string().trim().min(1, 'Firstname is required').max(50, 'Firstname must be at most 50 characters long'),
   lastname: z.string().trim().min(1, 'Lastname is required').max(50, 'Lastname must be at most 50 characters long'),
   email: z.string().email().toLowerCase().trim().min(1, 'Email is required').max(100, 'Email must be at most 100 characters long'),
-  password: passwordValidator,
-  phone: z.string().trim().min(7).max(13),
+  phone: phoneValidator.optional().or(z.literal(' ')),
   gender: z.enum([USER_GENDER.MALE, USER_GENDER.FEMALE]).transform((val) => val.toLowerCase()),
   stack: z.enum([STACK.FRONTEND, STACK.BACKEND, STACK.PRODUCT_DESIGN]).transform((val) => val.toLowerCase()),
   isEmailVerified: z.boolean().default(false),
@@ -45,7 +44,10 @@ export const refreshTokenSchema = z.object({
 export const updateUserProfileSchema = z.object({
   firstname: z.string().trim().toLowerCase().min(1).optional(),
   lastname: z.string().trim().toLowerCase().min(1).optional(),
-  phone: z.string().trim().min(7).max(13).optional()
+  phone: z.string().trim().min(10).max(13).optional(),
+  password: passwordValidator.optional(),
+  confirm_password: passwordValidator.optional(),
+  email: z.string().trim().toLowerCase().min(10).max(50).email().optional()
 });
 
 export const changePasswordSchema = z.object({
