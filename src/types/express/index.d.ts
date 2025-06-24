@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import { File as MulterFile } from 'multer';
 
 declare module 'express-serve-static-core' {
