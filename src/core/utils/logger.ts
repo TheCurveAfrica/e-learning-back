@@ -14,8 +14,7 @@ const logDir = 'logs';
 if (!isProduction && !fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
 }
-console.log(isProduction);
-console.log(isTest);
+
 const loggerTransports = [];
 
 if (!isProduction) {
