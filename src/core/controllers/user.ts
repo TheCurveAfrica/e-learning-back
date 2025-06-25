@@ -192,7 +192,6 @@ class UserController {
 
     const hashedPassword = bcrypt.hashSync(body.password, 10);
     const updatedUser = await this.userService.updateUser({ password: hashedPassword }, { email });
-    console.log('updatedUser', updatedUser);
 
     if (!updatedUser) {
       throw new BadRequestError({ message: 'Failed to update password' });
@@ -231,10 +230,8 @@ class UserController {
       throw new BadRequestError({ message: 'User is inactive', reason: "User's account has not been activated" });
     }
 
-    console.log('user', user);
-
     const passwordCorrect = bcrypt.compareSync(body.password, user.password);
-    console.log('passwordCorrect', passwordCorrect);
+
     if (!passwordCorrect) {
       throw new BadRequestError({ message: 'Invalid password or email' });
     }
@@ -242,6 +239,10 @@ class UserController {
     const accessToken = generateAccessJwtToken({ id: user._id, email: user.email });
     const refreshToken = generateRefreshJwtToken({ id: user._id });
     await this.userService.cacheRefreshToken({ userId: user._id, refreshToken });
+
+    if (user.status === USER_STATUS.Inactive && user.isEmailVerified) {
+      await this.userService.updateUser({ status: USER_STATUS.Active }, { email: user.email });
+    }
 
     const { firstname, lastname, email } = user;
 
@@ -324,7 +325,7 @@ class UserController {
     await this.userService.updateUser({ password: body.newPassword }, { _id: userId });
   }
 
-  async resetPassword(email: string): Promise<void> {
+  async forgotPassword(email: string): Promise<void> {
     const user = await this.userService.getUser({ email });
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
