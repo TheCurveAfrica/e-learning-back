@@ -136,9 +136,9 @@ class UserRequestHandler {
     }
   };
 
-  resetPassword: RequestHandler = async (req, res, next) => {
+  forgotPassword: RequestHandler = async (req, res, next) => {
     try {
-      await this.userController.resetPassword(req.body.email);
+      await this.userController.forgotPassword(req.body.email);
       res.json(responseHandler(null, 'Password reset email sent successfully'));
     } catch (error) {
       next(error);
@@ -147,8 +147,8 @@ class UserRequestHandler {
 
   verifyResetPasswordWithToken: RequestHandler = async (req, res, next) => {
     try {
-      await this.userController.verifyResetPasswordWithToken(req.body.email, req.body.reset_code, req.body.new_password, req.body.confirm_password);
-      res.json(responseHandler(null, 'Password reset successfully'));
+      await this.userController.verifyResetPasswordWithToken(req.body.email, req.body.reset_code);
+      res.json(responseHandler(null, 'Password reset code verified successfully'));
     } catch (error) {
       next(error);
     }
@@ -158,6 +158,15 @@ class UserRequestHandler {
     try {
       const users = await this.userController.findAllUsers();
       res.json(responseHandler(users, 'Users retrieved successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resetPassword: RequestHandler = async (req, res, next) => {
+    try {
+      await this.userController.resetPassword(req.body.email, req.body.new_password, req.body.confirm_password);
+      res.json(responseHandler(null, 'Password reset successfully'));
     } catch (error) {
       next(error);
     }
