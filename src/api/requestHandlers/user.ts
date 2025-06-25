@@ -136,9 +136,9 @@ class UserRequestHandler {
     }
   };
 
-  resetPassword: RequestHandler = async (req, res, next) => {
+  forgotPassword: RequestHandler = async (req, res, next) => {
     try {
-      await this.userController.resetPassword(req.body.email);
+      await this.userController.forgotPassword(req.body.email);
       res.json(responseHandler(null, 'Password reset email sent successfully'));
     } catch (error) {
       next(error);
