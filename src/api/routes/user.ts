@@ -41,7 +41,7 @@ const authRoute = (): Router => {
   router.get('/profile', authenticate, userRequestHandler.getUserProfile);
   router.patch('/set-password', validationWrapper(SEGMENT.BODY, updateUserProfileSchema), userRequestHandler.setInitialPassword);
   router.post('/change-password', validationWrapper(SEGMENT.BODY, changePasswordSchema), authenticate, userRequestHandler.changePassword);
-  router.post('/reset-password', validationWrapper(SEGMENT.BODY, resetPasswordSchema), userRequestHandler.resetPassword);
+  router.post('/forgot-password', validationWrapper(SEGMENT.BODY, resetPasswordSchema), userRequestHandler.forgotPassword);
   router.post(
     '/reset-password/verify',
     validationWrapper(SEGMENT.BODY, verifyResetPasswordWithTokenSchema),
