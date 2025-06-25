@@ -332,6 +332,7 @@ class UserController {
     }
 
     const { resetPasswordLink } = await this.userService.cachePasswordResetDetails(email);
+    console.log(resetPasswordLink);
 
     try {
       await EmailService.sendPasswordResetMail({
@@ -343,7 +344,7 @@ class UserController {
       logger.error(`Failed to send password reset email to ${user.email}:`, error);
     }
   }
-  async verifyResetPasswordWithToken(email: string, resetPasswordCode: string, newPassword: string, confirmPassword: string): Promise<void> {
+  async verifyResetPasswordWithToken(email: string, resetPasswordCode: string): Promise<void> {
     const user = await this.userService.getUser({ email });
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
@@ -357,21 +358,28 @@ class UserController {
       });
     }
 
-    if (newPassword !== confirmPassword) {
-      throw new BadRequestError({ message: 'New password and confirm password do not match', reason: 'Password mismatch' });
-    }
-
-    const saltPassword = bcrypt.genSaltSync(10);
-    newPassword = bcrypt.hashSync(newPassword, saltPassword);
-
-    await this.userService.updateUser({ password: newPassword }, { email });
-
     await this.userService.clearCachedPasswordResetToken(email);
   }
 
   async findAllUsers(): Promise<IUser[]> {
     const users = await this.userService.findAllUsers();
     return users;
+  }
+
+  async resetPassword(email: string, new_password: string, confirm_password: string): Promise<void> {
+    const user = await this.userService.getUser({ email });
+    if (!user) {
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
+    }
+
+    if (new_password !== confirm_password) {
+      throw new BadRequestError({ message: 'New password and confirm password do not match', reason: 'Password mismatch' });
+    }
+
+    const saltPassword = bcrypt.genSaltSync(10);
+    new_password = bcrypt.hashSync(new_password, saltPassword);
+
+    await this.userService.updateUser({ password: new_password }, { email });
   }
 }
 
