@@ -26,7 +26,7 @@ export const loginSchema = z.object({
 
 export const verifyUserSchema = z.object({
   email: z.string().trim().toLowerCase().min(10).max(50).email(),
-  verification_token: z.string().trim().min(1).max(32)
+  verification_token: z.string().trim().min(6).max(32)
 });
 
 export const sendSignUpVerifyCodeSchema = z.object({
@@ -56,13 +56,17 @@ export const changePasswordSchema = z.object({
   confirm_password: passwordValidator
 });
 
-export const resetPasswordSchema = z.object({
+export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().min(10).max(50).email()
 });
 
 export const verifyResetPasswordWithTokenSchema = z.object({
+  email: z.string().trim().toLowerCase().min(10, 'Email is required').max(50).email(),
+  reset_code: z.string().trim().min(6, 'Reset code is required').max(7)
+});
+
+export const resetPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().min(10).max(50).email(),
-  reset_code: z.string().trim().min(7).max(7),
   new_password: passwordValidator,
   confirm_password: passwordValidator
 });
