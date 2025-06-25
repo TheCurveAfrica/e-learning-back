@@ -4,6 +4,7 @@ import UserRequestHandler from '../requestHandlers/user';
 import {
   bulkRegistrationSchema,
   changePasswordSchema,
+  forgotPasswordSchema,
   loginSchema,
   refreshTokenSchema,
   registrationSchema,
@@ -41,12 +42,13 @@ const authRoute = (): Router => {
   router.get('/profile', authenticate, userRequestHandler.getUserProfile);
   router.patch('/set-password', validationWrapper(SEGMENT.BODY, updateUserProfileSchema), userRequestHandler.setInitialPassword);
   router.post('/change-password', validationWrapper(SEGMENT.BODY, changePasswordSchema), authenticate, userRequestHandler.changePassword);
-  router.post('/forgot-password', validationWrapper(SEGMENT.BODY, resetPasswordSchema), userRequestHandler.forgotPassword);
+  router.post('/forgot-password', validationWrapper(SEGMENT.BODY, forgotPasswordSchema), userRequestHandler.forgotPassword);
   router.post(
     '/reset-password/verify',
     validationWrapper(SEGMENT.BODY, verifyResetPasswordWithTokenSchema),
     userRequestHandler.verifyResetPasswordWithToken
   );
+  router.patch('/reset-password', validationWrapper(SEGMENT.BODY, resetPasswordSchema), userRequestHandler.resetPassword);
   router.get('/', userRequestHandler.getAllUsers);
   return router;
 };
