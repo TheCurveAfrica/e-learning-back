@@ -240,7 +240,7 @@ class UserService {
   }
 
   async cachePasswordResetDetails(email: string): Promise<{ resetPasswordLink: string; resetPasswordLinkExpiry: Date }> {
-    const resetPasswordCode = generateRandomInteger(7);
+    const resetPasswordCode = generateRandomInteger(6).toString();
     const resetPasswordLink = `${settings.app_base_url}${settings.reset_password.reset_url}?reset_code=${resetPasswordCode}&email=${email}`;
     const resetPasswordLinkExpiryInSeconds = Number(settings.reset_password.reset_link_validity_duration);
     const resetPasswordLinkCacheKey = `PASSWORD_RESET:${email}`;
@@ -259,7 +259,8 @@ class UserService {
     if (!cachedData) return false;
 
     const { resetPasswordCode, expiryDate } = JSON.parse(cachedData);
-    if (resetPasswordCode !== Number(code)) {
+
+    if (resetPasswordCode !== code) {
       return false;
     }
 
