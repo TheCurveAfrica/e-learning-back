@@ -148,7 +148,7 @@ class UserController {
     };
   }
 
-  async verifyEmail(email: string, verificationToken: string): Promise<{ firstname: string; lastname: string; email: string; token: string }> {
+  async verifyEmail(email: string, verificationToken: string): Promise<{ firstname: string; lastname: string; email: string }> {
     const user = await this.userService.getUser({ email });
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
@@ -169,13 +169,10 @@ class UserController {
 
     await this.userService.clearCachedVerificationCode(email);
 
-    const generateToken = generateAccessJwtToken({ id: user._id, email: user.email });
-
     return {
       firstname: capitalizeFirstLetter(user.firstname),
       lastname: capitalizeFirstLetter(user.lastname),
-      email: user.email,
-      token: generateToken
+      email: user.email
     };
   }
 

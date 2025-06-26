@@ -51,8 +51,8 @@ class UserRequestHandler {
 
   verifyEmail: RequestHandler = async (req, res, next) => {
     try {
-      await this.userController.verifyEmail(req.body.email, req.body.verification_token);
-      res.json(responseHandler({ status: VerificationTokenStatus.Valid }, 'Email verified successfully'));
+      const user = await this.userController.verifyEmail(req.body.email, req.body.verification_token);
+      res.json(responseHandler({ status: VerificationTokenStatus.Valid, user }, 'Email verified successfully'));
     } catch (error) {
       next(error);
     }
