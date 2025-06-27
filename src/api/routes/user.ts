@@ -50,6 +50,7 @@ const authRoute = (): Router => {
   );
   router.patch('/reset-password', validationWrapper(SEGMENT.BODY, resetPasswordSchema), userRequestHandler.resetPassword);
   router.get('/', userRequestHandler.getAllUsers);
+  router.get('/view', userRequestHandler.viewUser);
   return router;
 };
 
