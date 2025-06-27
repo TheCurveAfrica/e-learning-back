@@ -378,6 +378,18 @@ class UserController {
 
     await this.userService.updateUser({ password: new_password }, { email });
   }
+
+  async viewUser(email: string): Promise<{ firstname: string; lastname: string; email: string }> {
+    const user = await this.userService.getUser({ email });
+    if (!user) {
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
+    }
+    return {
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email
+    };
+  }
 }
 
 export default UserController;

@@ -171,6 +171,15 @@ class UserRequestHandler {
       next(error);
     }
   };
+
+  viewUser: RequestHandler = async (req, res, next) => {
+    try {
+      const user = await this.userController.viewUser(req.query.email as string);
+      res.json(responseHandler(user, 'User retrieved successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default UserRequestHandler;
