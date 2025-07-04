@@ -260,13 +260,11 @@ class UserController {
       throw new BadRequestError({ message: 'Invalid refresh token', reason: 'Refresh token is invalid' });
     }
 
-    const refreshToken = generateRefreshJwtToken({ id: user._id });
     const accessToken = generateAccessJwtToken({ id: user._id, email: user.email });
-    await this.userService.cacheRefreshToken({ userId: user._id, refreshToken });
 
     const { _id, firstname, lastname, email } = user;
     const name = `${firstname} ${lastname}`;
-    return { _id, name, email, accessToken, refreshToken };
+    return { _id, name, email, accessToken, refreshToken: data.refreshToken };
   }
 
   async logout(userId: string): Promise<void> {
