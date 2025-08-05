@@ -40,6 +40,7 @@ class UserController {
     body.password = ' ';
 
     const newUser = await this.userService.createUser(body);
+    console.log('newUser', newUser);
 
     const userData = {
       _id: newUser._id,
@@ -50,7 +51,8 @@ class UserController {
       gender: newUser.gender,
       isEmailVerified: newUser.isEmailVerified,
       stack: newUser.stack,
-      status: newUser.status
+      status: newUser.status,
+      role: newUser.role
     };
 
     return userData;
