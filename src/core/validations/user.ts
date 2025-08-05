@@ -1,6 +1,7 @@
 import z from 'zod';
 import { STACK, USER_GENDER, USER_STATUS } from '../constants/user';
 import { passwordValidator, phoneValidator } from '../helpers/utilities';
+import { USER_ROLES } from '../constants/user';
 
 export const registrationSchema = z.object({
   firstname: z.string().trim().min(1, 'Firstname is required').max(50, 'Firstname must be at most 50 characters long'),
@@ -10,7 +11,8 @@ export const registrationSchema = z.object({
   gender: z.enum([USER_GENDER.MALE, USER_GENDER.FEMALE]).transform((val) => val.toLowerCase()),
   stack: z.enum([STACK.FRONTEND, STACK.BACKEND, STACK.PRODUCT_DESIGN]).transform((val) => val.toLowerCase()),
   isEmailVerified: z.boolean().default(false),
-  status: z.enum([USER_STATUS.Active, USER_STATUS.Inactive]).default(USER_STATUS.Inactive)
+  status: z.enum([USER_STATUS.Active, USER_STATUS.Inactive]).default(USER_STATUS.Inactive),
+  role: z.enum([USER_ROLES.ADMIN, USER_ROLES.STUDENT, USER_ROLES.INSTRUCTOR]).default(USER_ROLES.STUDENT)
 });
 
 // Export the bulk registration schema as an array of user objects
