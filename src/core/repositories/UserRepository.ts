@@ -78,7 +78,8 @@ export class UserRepository implements IUserRepository {
       gender: user.gender,
       isEmailVerified: user.isEmailVerified,
       stack: user.stack,
-      status: user.status
+      status: user.status,
+      role: user.role
     };
   }
 }
