@@ -44,6 +44,7 @@ export interface IUser {
   isEmailVerified: boolean;
   stack: string;
   status: string;
+  role: string;
 }
 
 export interface SetPassword {
