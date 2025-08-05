@@ -13,7 +13,8 @@ const UserSchema: Schema = new Schema(
     gender: { type: String, required: true },
     isEmailVerified: { type: Boolean, default: false },
     stack: { type: String, required: true },
-    status: { type: String, required: true }
+    status: { type: String, required: true },
+    role: { type: String, required: true }
   },
   {
     timestamps: true
