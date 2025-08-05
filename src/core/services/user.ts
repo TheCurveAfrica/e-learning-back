@@ -11,6 +11,7 @@ import { bulkRegistrationSchema } from '../validations/user';
 import { EMAIL_STATUS, USER_STATUS } from '../constants/user';
 import * as XLSX from 'xlsx';
 import BadRequestError from '../errors/BadRequestError';
+import { USER_ROLES } from '../constants/user';
 
 class UserService {
   private userRepository: IUserRepository;
@@ -147,7 +148,8 @@ class UserService {
         stack,
         password: ' ',
         isEmailVerified: EMAIL_STATUS.NOT_VERIFIED,
-        status: USER_STATUS.Inactive
+        status: USER_STATUS.Inactive,
+        role: USER_ROLES.STUDENT
       });
     }
 
