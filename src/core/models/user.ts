@@ -14,7 +14,8 @@ const UserSchema: Schema = new Schema(
     isEmailVerified: { type: Boolean, default: false },
     stack: { type: String, required: true },
     status: { type: String, required: true },
-    role: { type: String, required: true }
+    role: { type: String, required: true },
+    bio: { type: String, default: '' }
   },
   {
     timestamps: true
