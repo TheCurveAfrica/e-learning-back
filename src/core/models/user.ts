@@ -15,7 +15,8 @@ const UserSchema: Schema = new Schema(
     stack: { type: String, required: true },
     status: { type: String, required: true },
     role: { type: String, required: true },
-    bio: { type: String, default: '' }
+    bio: { type: String, default: '' },
+    profilePicture: { type: String, default: '' }
   },
   {
     timestamps: true
