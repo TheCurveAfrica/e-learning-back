@@ -79,7 +79,8 @@ export class UserRepository implements IUserRepository {
       isEmailVerified: user.isEmailVerified,
       stack: user.stack,
       status: user.status,
-      role: user.role
+      role: user.role,
+      bio: user.bio
     };
   }
 }
