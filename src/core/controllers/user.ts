@@ -180,7 +180,7 @@ class UserController {
 
   async setInitialPassword(email: string, body: { password: string }): Promise<UserProfileData> {
     const user = await this.userService.getUser({ email });
-    console.log('user', user);
+
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found' });
     }
@@ -291,7 +291,7 @@ class UserController {
       email: user.email,
       phone: user.phone,
       gender: user.gender,
-      role: (user as any).role.name,
+      // role: (user as any).role.name,
       isEmailVerified: user.isEmailVerified
     };
 
@@ -326,6 +326,13 @@ class UserController {
     const user = await this.userService.getUser({ email });
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
+    }
+    if (!user.isEmailVerified) {
+      throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
+    }
+
+    if (user.password === ' ') {
+      throw new BadRequestError({ message: 'Password not set, Please set your password and proceed to login', reason: 'Password not set' });
     }
 
     const { resetPasswordLink } = await this.userService.cachePasswordResetDetails(email);
