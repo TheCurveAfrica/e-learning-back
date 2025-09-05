@@ -7,6 +7,11 @@ import { logger } from '../utils/logger';
 const template = fs.readFileSync(path.join(__dirname, '..', 'templates/email.html'), 'utf8');
 
 class EmailService {
+  static async sendAdminPasswordEmail(data: { to: string; name: string; password: string }): Promise<void> {
+    const subject = 'Your Admin Account Password';
+    const message = `Hello ${data.name}, your admin account has been created. Your password is: <b>${data.password}</b>`;
+    await this.sendMail(data.to, subject, message);
+  }
   constructor() {}
 
   static async sendForgotPasswordMail(to: string, code: string): Promise<any> {
