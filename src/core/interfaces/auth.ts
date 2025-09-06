@@ -54,11 +54,12 @@ export interface SetPassword {
 }
 
 export interface IAdmin {
+  _id?: string;
   firstname: string;
   lastname: string;
   email: string;
   password: string;
   phone: string;
   role: string;
-  profilePicture: string;
+  profilePicture?: string;
 }
