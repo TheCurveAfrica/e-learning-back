@@ -14,3 +14,26 @@ export const adminRegistrationSchema = z.object({
   profilePicture: z.string().optional(),
   password: passwordValidator.optional()
 });
+
+export const adminLoginSchema = z.object({
+  email: z.string().trim().toLowerCase().min(1, 'Email is required').max(100).email(),
+  password: z.string().trim().min(8, 'Password must be at least 8 characters').max(50)
+});
+
+export const adminForgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().min(1, 'Email is required').max(100).email()
+});
+
+export const adminResetPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().min(1, 'Email is required').max(100).email(),
+  code: z.string().trim().length(6, 'OTP code must be 6 digits'),
+  newPassword: passwordValidator,
+  confirmPassword: passwordValidator
+});
+
+export const adminChangePasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().min(1, 'Email is required').max(100).email(),
+  oldPassword: passwordValidator,
+  newPassword: passwordValidator,
+  confirmPassword: passwordValidator
+});
