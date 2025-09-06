@@ -21,8 +21,8 @@ class AdminRequestHandler {
 
   login: RequestHandler = async (req, res, next) => {
     try {
-      const { admin, accessToken, refreshToken } = await this.adminController.login(req.body);
-      res.json(responseHandler({ ...admin, accessToken, refreshToken }, 'Admin login successful'));
+      const result = await this.adminController.login(req.body);
+      res.json(responseHandler(result, 'Admin login successful'));
     } catch (error) {
       next(error);
     }
@@ -40,9 +40,6 @@ class AdminRequestHandler {
   verifyResetPasswordOtp: RequestHandler = async (req, res, next) => {
     try {
       const { email, code } = req.body;
-      if (!email || !code) {
-        throw new BadRequestError({ message: 'Email and code are required' });
-      }
       await this.adminController.verifyResetPasswordOtp(email, code);
       res.json(responseHandler(null, 'Admin password reset OTP verified successfully'));
     } catch (error) {
