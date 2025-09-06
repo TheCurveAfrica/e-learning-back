@@ -335,13 +335,14 @@ class UserController {
       throw new BadRequestError({ message: 'Password not set, Please set your password and proceed to login', reason: 'Password not set' });
     }
 
-    const { resetPasswordLink } = await this.userService.cachePasswordResetDetails(email);
+    const { resetPasswordLink, resetPasswordLinkExpiry } = await this.userService.cachePasswordResetDetails(email);
     console.log(resetPasswordLink);
 
     try {
       await EmailService.sendPasswordResetMail({
         to: user.email,
-        code: resetPasswordLink
+        code: resetPasswordLink,
+        expiryDate: resetPasswordLinkExpiry.toISOString()
       });
       logger.info(`Password reset email sent to ${user.email}`);
     } catch (error) {
