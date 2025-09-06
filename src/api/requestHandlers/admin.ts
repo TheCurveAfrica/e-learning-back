@@ -18,6 +18,55 @@ class AdminRequestHandler {
       next(error);
     }
   };
+
+  login: RequestHandler = async (req, res, next) => {
+    try {
+      const { admin, accessToken, refreshToken } = await this.adminController.login(req.body);
+      res.json(responseHandler({ ...admin, accessToken, refreshToken }, 'Admin login successful'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  forgotPassword: RequestHandler = async (req, res, next) => {
+    try {
+      await this.adminController.forgotPassword(req.body);
+      res.json(responseHandler(null, 'OTP sent to email for password reset'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  verifyResetPasswordOtp: RequestHandler = async (req, res, next) => {
+    try {
+      const { email, code } = req.body;
+      if (!email || !code) {
+        throw new BadRequestError({ message: 'Email and code are required' });
+      }
+      await this.adminController.verifyResetPasswordOtp(email, code);
+      res.json(responseHandler(null, 'Admin password reset OTP verified successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resetPassword: RequestHandler = async (req, res, next) => {
+    try {
+      await this.adminController.resetPassword(req.body.email, req.body.newPassword, req.body.confirmPassword);
+      res.json(responseHandler(null, 'Password reset successful'));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  changePassword: RequestHandler = async (req, res, next) => {
+    try {
+      await this.adminController.changePassword(req.body.email, req.body.oldPassword, req.body.newPassword, req.body.confirmPassword);
+      res.json(responseHandler(null, 'Password changed successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default AdminRequestHandler;
