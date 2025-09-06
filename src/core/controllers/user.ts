@@ -40,7 +40,6 @@ class UserController {
     body.password = ' ';
 
     const newUser = await this.userService.createUser(body);
-    console.log('newUser', newUser);
 
     const userData = {
       _id: newUser._id,
@@ -336,7 +335,6 @@ class UserController {
     }
 
     const { resetPasswordLink, resetPasswordLinkExpiry } = await this.userService.cachePasswordResetDetails(email);
-    console.log(resetPasswordLink);
 
     try {
       await EmailService.sendPasswordResetMail({
