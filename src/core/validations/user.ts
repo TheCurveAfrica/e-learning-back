@@ -8,11 +8,11 @@ export const registrationSchema = z.object({
   lastname: z.string().trim().min(1, 'Lastname is required').max(50, 'Lastname must be at most 50 characters long'),
   email: z.string().email().toLowerCase().trim().min(1, 'Email is required').max(100, 'Email must be at most 100 characters long'),
   phone: phoneValidator.optional().or(z.literal(' ')),
-  gender: z.enum([USER_GENDER.MALE, USER_GENDER.FEMALE]).transform((val) => val.toLowerCase()),
-  stack: z.enum([STACK.FRONTEND, STACK.BACKEND, STACK.PRODUCT_DESIGN]).transform((val) => val.toLowerCase()),
+  gender: z.nativeEnum(USER_GENDER).transform((val) => val.toLowerCase()),
+  stack: z.nativeEnum(STACK).transform((val) => val.toLowerCase()),
   isEmailVerified: z.boolean().default(false),
-  status: z.enum([USER_STATUS.Active, USER_STATUS.Inactive]).default(USER_STATUS.Inactive),
-  role: z.enum([USER_ROLES.ADMIN, USER_ROLES.STUDENT, USER_ROLES.INSTRUCTOR]).default(USER_ROLES.STUDENT)
+  status: z.nativeEnum(USER_STATUS).default(USER_STATUS.Inactive),
+  role: z.nativeEnum(USER_ROLES).default(USER_ROLES.STUDENT)
 });
 
 // Export the bulk registration schema as an array of user objects
