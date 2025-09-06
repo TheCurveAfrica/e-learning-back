@@ -106,7 +106,6 @@ class UserRequestHandler {
   setInitialPassword: RequestHandler = async (req, res, next) => {
     try {
       const { email, password, confirm_password } = req.body;
-      console.log(req.body);
       if (!email || !password || !confirm_password) {
         throw new BadRequestError({ message: 'Please fill all the required fields', reason: 'All fields are required' });
       }

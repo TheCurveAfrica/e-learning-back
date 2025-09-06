@@ -50,7 +50,8 @@ class UserController {
       gender: newUser.gender,
       isEmailVerified: newUser.isEmailVerified,
       stack: newUser.stack,
-      status: newUser.status
+      status: newUser.status,
+      role: newUser.role
     };
 
     return userData;
@@ -178,7 +179,7 @@ class UserController {
 
   async setInitialPassword(email: string, body: { password: string }): Promise<UserProfileData> {
     const user = await this.userService.getUser({ email });
-    console.log('user', user);
+
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found' });
     }
@@ -260,13 +261,11 @@ class UserController {
       throw new BadRequestError({ message: 'Invalid refresh token', reason: 'Refresh token is invalid' });
     }
 
-    const refreshToken = generateRefreshJwtToken({ id: user._id });
     const accessToken = generateAccessJwtToken({ id: user._id, email: user.email });
-    await this.userService.cacheRefreshToken({ userId: user._id, refreshToken });
 
     const { _id, firstname, lastname, email } = user;
     const name = `${firstname} ${lastname}`;
-    return { _id, name, email, accessToken, refreshToken };
+    return { _id, name, email, accessToken, refreshToken: data.refreshToken };
   }
 
   async logout(userId: string): Promise<void> {
@@ -291,7 +290,7 @@ class UserController {
       email: user.email,
       phone: user.phone,
       gender: user.gender,
-      role: (user as any).role.name,
+      // role: (user as any).role.name,
       isEmailVerified: user.isEmailVerified
     };
 
@@ -327,14 +326,21 @@ class UserController {
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
+    if (!user.isEmailVerified) {
+      throw new BadRequestError({ message: 'Email not verified', reason: 'User email is not verified' });
+    }
 
-    const { resetPasswordLink } = await this.userService.cachePasswordResetDetails(email);
-    console.log(resetPasswordLink);
+    if (user.password === ' ') {
+      throw new BadRequestError({ message: 'Password not set, Please set your password and proceed to login', reason: 'Password not set' });
+    }
+
+    const { resetPasswordLink, resetPasswordLinkExpiry } = await this.userService.cachePasswordResetDetails(email);
 
     try {
       await EmailService.sendPasswordResetMail({
         to: user.email,
-        code: resetPasswordLink
+        code: resetPasswordLink,
+        expiryDate: resetPasswordLinkExpiry.toISOString()
       });
       logger.info(`Password reset email sent to ${user.email}`);
     } catch (error) {

@@ -44,9 +44,22 @@ export interface IUser {
   isEmailVerified: boolean;
   stack: string;
   status: string;
+  role: string;
+  bio: string;
 }
 
 export interface SetPassword {
   password: string;
   confirmPassword: string;
+}
+
+export interface IAdmin {
+  _id?: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  phone: string;
+  role: string;
+  profilePicture?: string;
 }

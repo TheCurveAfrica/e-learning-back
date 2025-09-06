@@ -37,7 +37,7 @@ const authRoute = (): Router => {
     validationWrapper(SEGMENT.BODY, resendSignUpVerificationEmailSchema),
     userRequestHandler.resendSignupVerificationToken
   );
-  router.post('/refresh-token', validationWrapper(SEGMENT.BODY, refreshTokenSchema), authenticate, userRequestHandler.refreshToken);
+  router.post('/refresh-token', validationWrapper(SEGMENT.BODY, refreshTokenSchema), userRequestHandler.refreshToken);
   router.post('/logout', authenticate, userRequestHandler.logout);
   router.get('/profile', authenticate, userRequestHandler.getUserProfile);
   router.patch('/set-password', validationWrapper(SEGMENT.BODY, updateUserProfileSchema), userRequestHandler.setInitialPassword);

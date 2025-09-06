@@ -11,6 +11,7 @@ import { bulkRegistrationSchema } from '../validations/user';
 import { EMAIL_STATUS, USER_STATUS } from '../constants/user';
 import * as XLSX from 'xlsx';
 import BadRequestError from '../errors/BadRequestError';
+import { USER_ROLES } from '../constants/user';
 
 class UserService {
   private userRepository: IUserRepository;
@@ -62,7 +63,6 @@ class UserService {
     if (!formattedUsers.length) throw new BadRequestError({ message: 'No valid rows found in sheet' });
 
     let validUsers: any[] = [];
-    console.log(validUsers);
     const parseResult = bulkRegistrationSchema.safeParse(formattedUsers);
 
     if (parseResult.success) {
@@ -125,7 +125,6 @@ class UserService {
       const email = normalized['email']?.toLowerCase().trim() || normalized['email address']?.toLowerCase().trim() || '';
       const firstName = normalized['firstname'] || normalized['first name'] || '';
       const lastName = normalized['lastname'] || normalized['last name'] || '';
-      console.log(normalized['phone']);
       const phone = normalized['phone']?.toString() || normalized['phone number']?.toString() || normalized['phonenumber']?.toString() || ' ';
       const gender = normalized['gender']?.toLowerCase() || '';
       const stack = normalized['stack']?.toLowerCase() || '';
@@ -147,7 +146,8 @@ class UserService {
         stack,
         password: ' ',
         isEmailVerified: EMAIL_STATUS.NOT_VERIFIED,
-        status: USER_STATUS.Inactive
+        status: USER_STATUS.Inactive,
+        role: USER_ROLES.STUDENT
       });
     }
 
