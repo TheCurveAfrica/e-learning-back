@@ -63,7 +63,6 @@ class UserService {
     if (!formattedUsers.length) throw new BadRequestError({ message: 'No valid rows found in sheet' });
 
     let validUsers: any[] = [];
-    console.log(validUsers);
     const parseResult = bulkRegistrationSchema.safeParse(formattedUsers);
 
     if (parseResult.success) {
@@ -126,7 +125,6 @@ class UserService {
       const email = normalized['email']?.toLowerCase().trim() || normalized['email address']?.toLowerCase().trim() || '';
       const firstName = normalized['firstname'] || normalized['first name'] || '';
       const lastName = normalized['lastname'] || normalized['last name'] || '';
-      console.log(normalized['phone']);
       const phone = normalized['phone']?.toString() || normalized['phone number']?.toString() || normalized['phonenumber']?.toString() || ' ';
       const gender = normalized['gender']?.toLowerCase() || '';
       const stack = normalized['stack']?.toLowerCase() || '';
