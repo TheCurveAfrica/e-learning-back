@@ -5,17 +5,26 @@ import { Admin, IAdminModel } from '../models/admin';
 export class AdminRepository {
   async createAdmin(payload: Omit<IAdmin, '_id'>): Promise<IAdmin> {
     const admin = await Admin.create(payload);
-    return admin.toObject();
+    const obj = admin.toObject();
+    obj._id = admin._id.toString();
+    return obj;
   }
 
   async getAdmin(filter: FilterQuery<IAdminModel>): Promise<IAdmin | null> {
     const admin = await Admin.findOne(filter);
-    return admin ? admin.toObject() : null;
+    if (!admin) return null;
+    const obj = admin.toObject();
+    obj._id = admin._id.toString();
+    return obj;
   }
 
   async findAllAdmins(filter: FilterQuery<IAdminModel> = {}): Promise<IAdmin[]> {
     const admins = await Admin.find(filter).sort({ createdAt: -1 });
-    return admins.map((admin) => admin.toObject());
+    return admins.map((admin) => {
+      const obj = admin.toObject();
+      obj._id = admin._id.toString();
+      return obj;
+    });
   }
 
   async updateAdmin(filter: FilterQuery<IAdminModel>, payload: UpdateQuery<IAdminModel>): Promise<IAdminModel | null> {
