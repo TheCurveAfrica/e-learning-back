@@ -27,9 +27,9 @@ class EmailService {
     return this.sendMail(data.to, subject, message);
   }
 
-  static async sendPasswordResetMail(data: { to: string; code: string }): Promise<any> {
+  static async sendPasswordResetMail(data: { to: string; code: string; expiryDate: string }): Promise<any> {
     const subject = 'Password Reset';
-    const message = `Your password reset code is: <b>${data.code}</b>`;
+    const message = `Your password reset code is: <b>${data.code}</b> and it expires at ${data.expiryDate}`;
     return this.sendMail(data.to, subject, message);
   }
 
