@@ -49,7 +49,8 @@ export const updateUserProfileSchema = z.object({
   phone: z.string().trim().min(10).max(13).optional(),
   password: passwordValidator.optional(),
   confirm_password: passwordValidator.optional(),
-  email: z.string().trim().toLowerCase().min(10).max(50).email().optional()
+  email: z.string().trim().toLowerCase().min(10).max(50).email().optional(),
+  bio: z.string().trim().toLowerCase().min(1).optional()
 });
 
 export const changePasswordSchema = z.object({
