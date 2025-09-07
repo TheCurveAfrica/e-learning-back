@@ -402,35 +402,24 @@ class UserController {
     };
   }
 
-  async editProfile(userId: string, body: string): Promise<UserProfileData> {
-    const filter = { _id: userId };
-
-    const user = await this.userService.getUser(filter);
-    if (!user) {
-      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
-    }
-
-    const updatedUser = await this.userService.updateUser({ bio: body }, filter);
-    if (!updatedUser) {
-      throw new BadRequestError({ message: 'Failed to update profile' });
-    }
-
-    return updatedUser as UserProfileData;
-  }
-
-  async uploadProfilePicture(userId: string, imageUrl: string): Promise<UserProfileData> {
+  async editProfile(userId: string, body: string | null, imageUrl: string | null): Promise<UserProfileData> {
     const filter = { _id: userId };
     const user = await this.userService.getUser(filter);
     if (!user) {
       throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
     }
 
-    if (user.profilePicture && user.profilePicture.startsWith('https://res.cloudinary.com/')) {
+    if (imageUrl !== null && user.profilePicture && user.profilePicture.startsWith('https://res.cloudinary.com/')) {
       const publicId = extractCloudinaryPublicId(user.profilePicture);
       await deleteImageFromCloudinary(publicId);
     }
 
-    const updatedUser = await this.userService.updateUser({ profilePicture: imageUrl }, filter);
+    const updatePayload = {
+      profilePicture: imageUrl !== null ? imageUrl : user.profilePicture,
+      bio: body !== null ? body : user.bio
+    };
+
+    const updatedUser = await this.userService.updateUser(updatePayload, filter);
     if (!updatedUser) {
       throw new BadRequestError({ message: 'Failed to update profile picture' });
     }

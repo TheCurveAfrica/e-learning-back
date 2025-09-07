@@ -51,8 +51,13 @@ const authRoute = (): Router => {
   router.patch('/reset-password', validationWrapper(SEGMENT.BODY, resetPasswordSchema), userRequestHandler.resetPassword);
   router.get('/', userRequestHandler.getAllUsers);
   router.get('/view', userRequestHandler.viewUser);
-  router.put('/profile/update-bio', authenticate, validationWrapper(SEGMENT.BODY, updateUserProfileSchema), userRequestHandler.editProfile);
-  router.patch('/profile/upload-picture', authenticate, uploadImage.single('image'), userRequestHandler.uploadProfilePicture);
+  router.put(
+    '/profile/update',
+    authenticate,
+    validationWrapper(SEGMENT.BODY, updateUserProfileSchema),
+    uploadImage.single('image'),
+    userRequestHandler.editProfile
+  );
   return router;
 };
 

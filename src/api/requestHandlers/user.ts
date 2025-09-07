@@ -182,18 +182,12 @@ class UserRequestHandler {
 
   editProfile: RequestHandler = async (req, res, next) => {
     try {
-      const response = await this.userController.editProfile(res.locals.user.id as string, req.body.bio as string);
-      res.json(responseHandler(response, 'Profile updated successfully'));
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  uploadProfilePicture: RequestHandler = async (req, res, next) => {
-    try {
+      const imageUrl = req.file ? (req.file.path as string) : null;
+      const bio = req.body.bio ? (req.body.bio as string) : null;
       const userId = res.locals.user.id as string;
-      const response = await this.userController.uploadProfilePicture(userId, req.file.path as string);
-      res.json(responseHandler(response, 'Profile picture uploaded successfully'));
+
+      const response = await this.userController.editProfile(userId, bio, imageUrl);
+      res.json(responseHandler(response, 'Profile updated successfully'));
     } catch (error) {
       next(error);
     }
