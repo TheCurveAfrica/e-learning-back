@@ -42,3 +42,11 @@ export const uploadImage = multer({ storage: cloudinaryStorage('user-images', 'i
 
 /** Use this to upload Excel files to Cloudinary (if needed) */
 export const uploadExcelToCloudinary = multer({ storage: cloudinaryStorage('excel-uploads', 'raw') });
+
+export const deleteImageFromCloudinary = async (publicId: string): Promise<void> => {
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+  } catch (error) {
+    console.error('Error deleting image from Cloudinary:', error);
+  }
+};

@@ -19,7 +19,7 @@ import { SEGMENT, validationWrapper } from '../../../src/core/helpers/validators
 import UserService from '../../../src/core/services/user';
 import UserController from '../../../src/core/controllers/user';
 import { authenticate } from '../middlewares/authentication';
-import { uploadExcel } from '../../../src/core/config/multer';
+import { uploadExcel, uploadImage } from '../../../src/core/config/multer';
 
 const router = Router();
 const userService = new UserService(new UserRepository());
@@ -51,6 +51,13 @@ const authRoute = (): Router => {
   router.patch('/reset-password', validationWrapper(SEGMENT.BODY, resetPasswordSchema), userRequestHandler.resetPassword);
   router.get('/', userRequestHandler.getAllUsers);
   router.get('/view', userRequestHandler.viewUser);
+  router.put(
+    '/profile/update',
+    authenticate,
+    validationWrapper(SEGMENT.BODY, updateUserProfileSchema),
+    uploadImage.single('image'),
+    userRequestHandler.editProfile
+  );
   return router;
 };
 

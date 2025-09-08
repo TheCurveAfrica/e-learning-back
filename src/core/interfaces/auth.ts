@@ -17,6 +17,8 @@ export interface UserProfileData {
   isEmailVerified: boolean;
   stack?: string;
   status?: string;
+  bio?: string;
+  profilePicture?: string;
 }
 
 export interface TokenPayload {
@@ -46,6 +48,7 @@ export interface IUser {
   status: string;
   role: string;
   bio: string;
+  profilePicture: string;
 }
 
 export interface SetPassword {

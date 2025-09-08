@@ -77,6 +77,7 @@ export class UserRepository implements IUserRepository {
       phone: user.phone,
       gender: user.gender,
       isEmailVerified: user.isEmailVerified,
+      profilePicture: user.profilePicture,
       stack: user.stack,
       status: user.status,
       role: user.role,

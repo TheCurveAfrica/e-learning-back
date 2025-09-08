@@ -2,12 +2,13 @@ import bcrypt from 'bcrypt';
 import BadRequestError from '../errors/BadRequestError';
 import { LoginResponse, ResendVerificationEmailResponse, UserProfileData } from '../interfaces/auth';
 import ResourceNotFoundError from '../errors/ResourceNotFoundError';
-import { capitalizeFirstLetter } from '../helpers/utilities';
+import { capitalizeFirstLetter, extractCloudinaryPublicId } from '../helpers/utilities';
 import { IUser, SetPassword } from '../interfaces/auth';
 import UserService from '../services/user';
 import { USER_STATUS, VerificationTokenStatus } from '../constants/user';
 import { logger } from '../utils/logger';
 import settings from '../config/application';
+import { deleteImageFromCloudinary } from '../config/multer';
 import EmailService from '../services/email';
 import { generateAccessJwtToken, generateRefreshJwtToken } from '../helpers/auth';
 
@@ -291,6 +292,9 @@ class UserController {
       phone: user.phone,
       gender: user.gender,
       // role: (user as any).role.name,
+      stack: user.stack,
+      profilePicture: user.profilePicture,
+      bio: user.bio,
       isEmailVerified: user.isEmailVerified
     };
 
@@ -347,6 +351,7 @@ class UserController {
       logger.error(`Failed to send password reset email to ${user.email}:`, error);
     }
   }
+
   async verifyResetPasswordWithToken(email: string, resetPasswordCode: string): Promise<void> {
     const user = await this.userService.getUser({ email });
     if (!user) {
@@ -395,6 +400,30 @@ class UserController {
       lastname: user.lastname,
       email: user.email
     };
+  }
+
+  async editProfile(userId: string, body: string | null, imageUrl: string | null): Promise<UserProfileData> {
+    const filter = { _id: userId };
+    const user = await this.userService.getUser(filter);
+    if (!user) {
+      throw new ResourceNotFoundError({ message: 'User not found', reason: 'Student not registered' });
+    }
+
+    if (imageUrl !== null && user.profilePicture && user.profilePicture.startsWith('https://res.cloudinary.com/')) {
+      const publicId = extractCloudinaryPublicId(user.profilePicture);
+      await deleteImageFromCloudinary(publicId);
+    }
+
+    const updatePayload = {
+      profilePicture: imageUrl !== null ? imageUrl : user.profilePicture,
+      bio: body !== null ? body : user.bio
+    };
+
+    const updatedUser = await this.userService.updateUser(updatePayload, filter);
+    if (!updatedUser) {
+      throw new BadRequestError({ message: 'Failed to update profile picture' });
+    }
+    return updatedUser as UserProfileData;
   }
 }
 

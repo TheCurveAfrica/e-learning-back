@@ -179,6 +179,19 @@ class UserRequestHandler {
       next(error);
     }
   };
+
+  editProfile: RequestHandler = async (req, res, next) => {
+    try {
+      const imageUrl = req.file ? (req.file.path as string) : null;
+      const bio = req.body.bio ? (req.body.bio as string) : null;
+      const userId = res.locals.user.id as string;
+
+      const response = await this.userController.editProfile(userId, bio, imageUrl);
+      res.json(responseHandler(response, 'Profile updated successfully'));
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default UserRequestHandler;

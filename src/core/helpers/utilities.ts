@@ -126,3 +126,11 @@ export function generateRandomInteger(digits: number): number {
 export const capitalizeFirstLetter = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
+
+export const extractCloudinaryPublicId = (url: string): string => {
+  const imageUrl = url.split('?')[0];
+  let publicId = imageUrl.split('/upload/')[1];
+  publicId = publicId.substring(0, publicId.lastIndexOf('.'));
+  // return without the version
+  return publicId.replace(/^v[0-9]+\//, '');
+};
