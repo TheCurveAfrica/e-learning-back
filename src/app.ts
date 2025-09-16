@@ -13,7 +13,7 @@ app.use(morgan(':date[web] :method :url :status :response-time ms - :res[content
 app.use(
   cors({
     credentials: true,
-    origin: 'http://localhost:3000'
+    origin: '*'
   })
 );
 
