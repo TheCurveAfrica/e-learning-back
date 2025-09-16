@@ -9,7 +9,7 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(morgan('date[web] :method :url :status :response-time ms - :res[content-length]'));
+app.use(morgan(':date[web] :method :url :status :response-time ms - :res[content-length]'));
 app.use(
   cors({
     credentials: true,
