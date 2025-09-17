@@ -234,5 +234,3 @@ export const expire = async (key: string, seconds: number): Promise<boolean> => 
     return false;
   }
 };
-
-export default redisClient;

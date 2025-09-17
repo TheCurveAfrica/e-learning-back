@@ -5,7 +5,7 @@ import { IUserModel } from '../models/user';
 import { addSeconds, isAfter } from 'date-fns';
 import settings from '../config/application';
 import TooManyRequestsError from '../errors/TooManyRequestsError';
-import redisClient from '../utils/redis';
+import * as redisClient from '../utils/redis';
 import { generateRandomInteger } from '../helpers/utilities';
 import { bulkRegistrationSchema } from '../validations/user';
 import { EMAIL_STATUS, USER_STATUS } from '../constants/user';
@@ -182,7 +182,7 @@ class UserService {
     const expiryDate = addSeconds(new Date(), verificationLinkExpiryInSeconds);
     const verificationData = JSON.stringify({ verificationCode, expiryDate });
 
-    await redisClient.set(verificationLinkCacheKey, verificationData, { EX: verificationLinkExpiryInSeconds });
+    await redisClient.set(verificationLinkCacheKey, verificationData, verificationLinkExpiryInSeconds);
 
     return { verificationLink, verificationLinkExpiry: expiryDate };
   }
@@ -215,7 +215,7 @@ class UserService {
     const refreshTokenCacheKey = `USER_REFRESH_TOKEN:${data.userId}`;
     const refreshTokenExpiryInSeconds = Number(settings.jwt.refresh_token_expires_in);
     const refreshTokenData = JSON.stringify({ token: data.refreshToken });
-    await redisClient.set(refreshTokenCacheKey, refreshTokenData, { EX: refreshTokenExpiryInSeconds });
+    await redisClient.set(refreshTokenCacheKey, refreshTokenData, refreshTokenExpiryInSeconds);
     redisClient.expire(refreshTokenCacheKey, refreshTokenExpiryInSeconds);
   }
 
@@ -248,7 +248,7 @@ class UserService {
     const expiryDate = addSeconds(new Date(), resetPasswordLinkExpiryInSeconds);
     const resetData = JSON.stringify({ resetPasswordCode, expiryDate });
 
-    await redisClient.set(resetPasswordLinkCacheKey, resetData, { EX: resetPasswordLinkExpiryInSeconds });
+    await redisClient.set(resetPasswordLinkCacheKey, resetData, resetPasswordLinkExpiryInSeconds);
 
     return { resetPasswordLink, resetPasswordLinkExpiry: expiryDate };
   }
