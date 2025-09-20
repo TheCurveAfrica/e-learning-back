@@ -37,3 +37,8 @@ export enum STACK {
   BACKEND = 'backend',
   PRODUCT_DESIGN = 'product_design'
 }
+
+export enum CLASS_QUERY {
+  LIVE = 'live',
+  RECORDED = 'recorded'
+}
