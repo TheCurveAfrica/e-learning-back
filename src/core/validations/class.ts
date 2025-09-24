@@ -5,7 +5,6 @@ export const classCreationSchema = z.object({
   title: z.string().trim().min(1, 'title is required').max(50, 'title must be at most 50 characters long'),
   description: z.string().trim().min(1, 'description is required'),
   startDate: z.string().trim().min(1, 'startDate is required').max(10, 'startDate must be at most 10 characters long'),
-  endDate: z.string().trim().min(1, 'endDate is required').max(10, 'endDate must be at most 10 characters long'),
   startTime: z.string().min(1, 'startTime is required').max(15, 'startTime must be at most 15 characters long'),
   endTime: z.string().min(1, 'endTime is required').max(15, 'endTime must be at most 15 characters long'),
   stack: z.nativeEnum(STACK).transform((val) => val.toLowerCase()),

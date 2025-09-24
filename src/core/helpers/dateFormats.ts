@@ -34,7 +34,7 @@ export function validateEventDates(date: string, endDate?: string | null): Valid
 
     if (endDateObj < startDateObj) {
       result.isValid = false;
-      result.errors.push('End date and time cannot be before start date.');
+      result.errors.push('End time cannot be before start time.');
     }
   }
 

@@ -90,7 +90,6 @@ class ClassService {
       title: classDoc.title,
       description: classDoc.description,
       startDate: formatDateTime(new Date(classDoc.startDateTime), 'MM/DD/YYYY'),
-      endDate: formatDateTime(new Date(classDoc.endDateTime), 'MM/DD/YYYY'),
       startTime: formatDateTime(new Date(classDoc.startDateTime), 'HH:mm'),
       endTime: formatDateTime(new Date(classDoc.endDateTime), 'HH:mm'),
       classLink: classDoc.classLink,

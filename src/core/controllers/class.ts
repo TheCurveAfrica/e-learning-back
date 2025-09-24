@@ -3,7 +3,6 @@ import { IClass, IClassReq, IPaginatedResponse, IRecordedClass } from '../interf
 import { ClassRepository } from '../repositories/ClassRepository';
 import { validateEventDates } from '../helpers/dateFormats';
 import ClassService from '../services/class';
-import { logger } from '../utils/logger';
 
 class ClassController {
   private classRepository: ClassRepository;
@@ -16,14 +15,14 @@ class ClassController {
 
   async createClass(body: Omit<IClassReq, '_id'>): Promise<IClassReq> {
     const startDateTime = `${body.startDate!} ${body.startTime!}`;
-    const endDateTime = `${body.endDate!} ${body.endTime!}`;
+    const endDateTime = `${body.startDate!} ${body.endTime!}`;
 
     const validateDate = validateEventDates(startDateTime, endDateTime);
     if (!validateDate.isValid) {
       throw new BadRequestError({ message: 'Invalid date range', reason: validateDate.errors[0] });
     }
 
-    const { startDate, endDate, startTime, endTime, ...rest } = body;
+    const { startDate, startTime, endTime, ...rest } = body;
 
     const requestData: Omit<IClass, '_id'> = {
       ...rest,
@@ -61,51 +60,60 @@ class ClassController {
     }
 
     const hasStartDate = body.startDate !== undefined;
-    const hasEndDate = body.endDate !== undefined;
     const hasStartTime = body.startTime !== undefined;
     const hasEndTime = body.endTime !== undefined;
 
-    if (!hasStartDate && !hasEndDate && !hasStartTime && !hasEndTime) {
+    if (!hasStartDate && !hasStartTime && !hasEndTime) {
       const { startTime, endTime, ...patch } = body as any;
       const updated = await this.classService.updateClass(id, patch);
       return updated;
     }
 
-    let StartDateTimeStr: string;
-    const startKey = (hasStartDate ? 2 : 0) | (hasStartTime ? 1 : 0);
+    const key = (hasStartDate ? 4 : 0) | (hasStartTime ? 2 : 0) | (hasEndTime ? 1 : 0);
 
-    switch (startKey) {
-      case 3:
+    let StartDateTimeStr: string;
+    let EndDateTimeStr: string;
+
+    switch (key) {
+      case 7:
         StartDateTimeStr = `${body.startDate!} ${body.startTime!}`;
+        EndDateTimeStr = `${body.startDate!} ${body.endTime!}`;
         break;
-      case 2:
+
+      case 6:
+        StartDateTimeStr = `${body.startDate!} ${body.startTime!}`;
+        EndDateTimeStr = `${body.startDate!} ${existing.endTime}`;
+        break;
+
+      case 5:
         StartDateTimeStr = `${body.startDate!} ${existing.startTime}`;
+        EndDateTimeStr = `${body.startDate!} ${body.endTime!}`;
         break;
-      case 1:
+
+      case 4:
+        StartDateTimeStr = `${body.startDate!} ${existing.startTime}`;
+        EndDateTimeStr = `${body.startDate!} ${existing.endTime}`;
+        break;
+
+      case 3:
         StartDateTimeStr = `${existing.startDate} ${body.startTime!}`;
+        EndDateTimeStr = `${existing.startDate} ${body.endTime!}`;
         break;
+
+      case 2:
+        StartDateTimeStr = `${existing.startDate} ${body.startTime!}`;
+        EndDateTimeStr = `${existing.startDate} ${existing.endTime}`;
+        break;
+
+      case 1:
+        StartDateTimeStr = `${existing.startDate} ${existing.startTime}`;
+        EndDateTimeStr = `${existing.startDate} ${body.endTime!}`;
+        break;
+
       case 0:
       default:
         StartDateTimeStr = `${existing.startDate} ${existing.startTime}`;
-        break;
-    }
-
-    let EndDateTimeStr: string;
-    const endKey = (hasEndDate ? 2 : 0) | (hasEndTime ? 1 : 0);
-
-    switch (endKey) {
-      case 3:
-        EndDateTimeStr = `${body.endDate!} ${body.endTime!}`;
-        break;
-      case 2:
-        EndDateTimeStr = `${body.endDate!} ${existing.endTime}`;
-        break;
-      case 1:
-        EndDateTimeStr = `${existing.endDate} ${body.endTime!}`;
-        break;
-      case 0:
-      default:
-        EndDateTimeStr = `${existing.endDate} ${existing.endTime}`;
+        EndDateTimeStr = `${existing.startDate} ${existing.endTime}`;
         break;
     }
 
@@ -124,7 +132,7 @@ class ClassController {
     if (hasStartDate || hasStartTime) {
       patch.startDateTime = new Date(StartDateTimeStr);
     }
-    if (hasEndDate || hasEndTime) {
+    if (hasEndTime || hasStartDate || hasStartTime) {
       patch.endDateTime = new Date(EndDateTimeStr);
     }
 
